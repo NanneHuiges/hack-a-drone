@@ -28,6 +28,13 @@ import nl.ordina.jtech.hackadrone.models.Command;
 public interface CommandListener {
 
     /**
+     * Get the delay between commands
+     *
+     * @return delay in ms
+     */
+    int getDelay();
+
+    /**
      * Handles the received command.
      *
      * @param command the command to handle

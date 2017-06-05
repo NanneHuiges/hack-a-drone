@@ -19,6 +19,7 @@ package nl.ordina.jtech.hackadrone;
 import nl.ordina.jtech.hackadrone.io.*;
 import nl.ordina.jtech.hackadrone.net.CommandConnection;
 import nl.ordina.jtech.hackadrone.net.TransportConnection;
+import nl.ordina.jtech.hackadrone.utils.ANSI;
 import nl.ordina.jtech.hackadrone.utils.ByteUtils;
 
 import java.io.IOException;
@@ -105,7 +106,7 @@ public final class CX10 implements Drone {
     /**
      * The AI controller.
      */
-    private Controller ai;
+    private QueueController ai;
 
     /**
      * Connects.
@@ -288,11 +289,12 @@ public final class CX10 implements Drone {
      */
     @Override
     public void startAi() throws DroneException {
+        System.out.println(ANSI.WHITE + "startAI" + ANSI.RESET);
+
         try {
             if (ai == null) {
-                ai = new Controller(new AI(), new CommandConnection(IO_HOST, IO_PORT));
+                ai = new QueueController(new AI(), new CommandConnection(IO_HOST, IO_PORT));
             }
-
             ai.start();
         } catch (IOException | IllegalThreadStateException e) {
             throw new DroneException("Starting the AI of the " + NAME + " failed!");

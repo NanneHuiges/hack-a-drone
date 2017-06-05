@@ -20,15 +20,16 @@ import nl.ordina.jtech.hackadrone.models.Command;
 import nl.ordina.jtech.hackadrone.net.CommandConnection;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 /**
  * Class representing the controller for a drone.
+ * Based on Controller.java
  *
- * @author Nils Berlijn
+ * @author Nanne Huiges
  * @version 1.0
- * @since 1.0
  */
-public final class Controller extends Thread implements CommandListener {
+public final class QueueController extends Thread implements CommandListener{
 
     /**
      * The device to control the drone with.
@@ -41,9 +42,9 @@ public final class Controller extends Thread implements CommandListener {
     private final CommandConnection commandConnection;
 
     /**
-     * The command.
+     * The command list
      */
-    private Command command = new Command();
+    private LinkedList<Command> commandList = new LinkedList<>();
 
     private int delay = 50;
 
@@ -53,7 +54,7 @@ public final class Controller extends Thread implements CommandListener {
      * @param device the device to control the drone with
      * @param commandConnection the command connection with the drone
      */
-    public Controller(Device device, CommandConnection commandConnection) {
+    public QueueController(Device device, CommandConnection commandConnection) {
         this.device = device;
         this.commandConnection = commandConnection;
     }
@@ -76,9 +77,15 @@ public final class Controller extends Thread implements CommandListener {
         device.setListener(this);
         device.start();
 
+        Command defaultCommand = new Command();
+
         while (!isInterrupted()) {
             try {
-                commandConnection.sendCommand(command);
+                if (commandList.isEmpty()) {
+                    commandConnection.sendCommand(defaultCommand);
+                } else {
+                    commandConnection.sendCommand(commandList.remove());
+                }
                 Thread.sleep(this.delay);
             } catch (IOException e) {
                 System.err.println("Unable to send command");
@@ -95,15 +102,14 @@ public final class Controller extends Thread implements CommandListener {
 
     /**
      * Handles the received command.
+     * As every command
      *
      * @param command the command to handle
      */
     @Override
     public void onCommandReceived(Command command) {
-        if (command == null) {
-            this.command = new Command();
-        } else {
-            this.command = command;
+        if (command != null) {
+            this.commandList.add(command);
         }
     }
 
